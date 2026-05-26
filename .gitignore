@@ -1,0 +1,17 @@
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Chaves e credenciais — NUNCA versionar
+*.pem
+*.ppk
+.env
+credentials
+
+# Editor
+.vscode/
+.idea/
