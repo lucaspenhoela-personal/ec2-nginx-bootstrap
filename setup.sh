@@ -5,8 +5,8 @@
 # Uso: sudo bash setup.sh
 # ====================================================================
 
-set -euo pipefail  # para o script se qualquer comando falhar
-export DEBIAN_FRONTEND=noninteractive
+set -euo pipefail  # para em erro, variavel indefinida ou falha em pipe
+export DEBIAN_FRONTEND=noninteractive  # evita prompts interativos do apt
 
 LOG_FILE="/var/log/setup.log"
 
@@ -27,12 +27,15 @@ apt-get upgrade -y >> "$LOG_FILE" 2>&1
 log "Instalando Nginx..."
 apt-get install -y nginx >> "$LOG_FILE" 2>&1
 
-# 3. Garantir que Nginx está habilitado e rodando
+# 3. Garantir que Nginx esta habilitado e rodando
 log "Habilitando Nginx pra iniciar no boot..."
 systemctl enable nginx >> "$LOG_FILE" 2>&1
 systemctl start nginx >> "$LOG_FILE" 2>&1
 
-log "Configurando auto-restart via systemd override..."
+# 4. Auto-restart via systemd (substitui o healthcheck por cron)
+# Restart=on-failure reage em segundos a crash do processo e respeita
+# um "systemctl stop" intencional do operador.
+log "Configurando auto-restart do Nginx via systemd override..."
 mkdir -p /etc/systemd/system/nginx.service.d
 cat > /etc/systemd/system/nginx.service.d/override.conf << 'OVERRIDE'
 [Service]
@@ -41,8 +44,8 @@ RestartSec=5s
 OVERRIDE
 systemctl daemon-reload
 
-# 4. Criar página customizada
-log "Criando página HTML customizada..."
+# 5. Criar pagina customizada
+log "Criando pagina HTML customizada..."
 cat > /var/www/html/index.html << 'HTML'
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -58,7 +61,7 @@ cat > /var/www/html/index.html << 'HTML'
 <body>
     <h1>Servidor provisionado automaticamente!</h1>
     <p>Este servidor foi configurado por um script bash.</p>
-    <p>Instância: <code id="hostname"></code></p>
+    <p>Instancia: <code id="hostname"></code></p>
     <script>
         document.getElementById('hostname').textContent = window.location.hostname;
     </script>
@@ -66,9 +69,12 @@ cat > /var/www/html/index.html << 'HTML'
 </html>
 HTML
 
-log "=== Setup concluído com sucesso ==="
+# 6. Obter IP publico via IMDSv2 (sem dependencia de servico externo)
+log "Consultando IP publico via IMDSv2..."
 TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
     -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
 PUBLIC_IP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
     http://169.254.169.254/latest/meta-data/public-ipv4)
+
+log "=== Setup concluido com sucesso ==="
 log "Acesse: http://$PUBLIC_IP"
