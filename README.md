@@ -15,7 +15,7 @@
 [EC2 Ubuntu 24.04 - t2.micro]
     ├── Nginx (servidor web)
     ├── HTML customizada
-    └── Cron job (healthcheck a cada 5min)
+    └── systemd override (auto-restart on-failure)
 ```
 
 ## Tecnologias
@@ -23,7 +23,7 @@
 - **AWS EC2** — instância Ubuntu 24.04 t2.micro/t3.micro
 - **Nginx** — servidor web
 - **Bash** — script de automação (`setup.sh`)
-- **Cron + systemd** — healthcheck e gerenciamento de serviços
+- **systemd** — gerenciamento de serviços e auto-restart via override (`Restart=on-failure`)
 
 ## O que o script faz
 
@@ -31,8 +31,12 @@
 - Instala Nginx
 - Habilita serviço pra iniciar no boot (`systemctl enable nginx`)
 - Cria página HTML customizada em `/var/www/html/`
-- Configura cron de healthcheck (verifica Nginx a cada 5 min, reinicia se cair)
+- Configura auto-restart do Nginx via systemd override (`Restart=on-failure`, `RestartSec=5s`)
 - Loga todas as operações em `/var/log/setup.log`
+
+### Decisão: cron vs systemd
+
+A primeira versão usava um cron job de healthcheck a cada 5 minutos. O cron reage em até 5 minutos e religa o serviço mesmo quando foi parado de propósito (um `systemctl stop nginx` intencional era desfeito no ciclo seguinte). O systemd override com `Restart=on-failure` reage em segundos e respeita o stop intencional: só religa quando o processo termina com falha. Por isso a troca.
 
 ## Como reproduzir
 

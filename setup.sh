@@ -31,6 +31,15 @@ log "Habilitando Nginx pra iniciar no boot..."
 systemctl enable nginx >> "$LOG_FILE" 2>&1
 systemctl start nginx >> "$LOG_FILE" 2>&1
 
+log "Configurando auto-restart via systemd override..."
+mkdir -p /etc/systemd/system/nginx.service.d
+cat > /etc/systemd/system/nginx.service.d/override.conf << 'OVERRIDE'
+[Service]
+Restart=on-failure
+RestartSec=5s
+OVERRIDE
+systemctl daemon-reload
+
 # 4. Criar página customizada
 log "Criando página HTML customizada..."
 cat > /var/www/html/index.html << 'HTML'
@@ -55,21 +64,6 @@ cat > /var/www/html/index.html << 'HTML'
 </body>
 </html>
 HTML
-
-# 5. Configurar healthcheck via cron
-log "Configurando healthcheck do Nginx via cron..."
-cat > /usr/local/bin/nginx-healthcheck.sh << 'CRON'
-#!/bin/bash
-if ! systemctl is-active --quiet nginx; then
-    systemctl start nginx
-    echo "[$(date)] Nginx estava parado. Reiniciado." >> /var/log/nginx-healthcheck.log
-fi
-CRON
-chmod +x /usr/local/bin/nginx-healthcheck.sh
-
-# Adiciona cron job (a cada 5 minutos) se ainda não existir
-(crontab -l 2>/dev/null | grep -q nginx-healthcheck.sh) || \
-    (crontab -l 2>/dev/null; echo "*/5 * * * * /usr/local/bin/nginx-healthcheck.sh") | crontab -
 
 log "=== Setup concluído com sucesso ==="
 log "Acesse: http://$(curl -s ifconfig.me)"
