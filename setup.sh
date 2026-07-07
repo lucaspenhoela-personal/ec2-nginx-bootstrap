@@ -5,7 +5,8 @@
 # Uso: sudo bash setup.sh
 # ====================================================================
 
-set -e  # para o script se qualquer comando falhar
+set -euo pipefail  # para o script se qualquer comando falhar
+export DEBIAN_FRONTEND=noninteractive
 
 LOG_FILE="/var/log/setup.log"
 
@@ -17,14 +18,14 @@ log "=== Iniciando setup do servidor web ==="
 
 # 1. Atualizar sistema
 log "Atualizando lista de pacotes..."
-apt update -y >> "$LOG_FILE" 2>&1
+apt-get update -y >> "$LOG_FILE" 2>&1
 
 log "Atualizando pacotes instalados..."
-apt upgrade -y >> "$LOG_FILE" 2>&1
+apt-get upgrade -y >> "$LOG_FILE" 2>&1
 
 # 2. Instalar Nginx
 log "Instalando Nginx..."
-apt install -y nginx >> "$LOG_FILE" 2>&1
+apt-get install -y nginx >> "$LOG_FILE" 2>&1
 
 # 3. Garantir que Nginx está habilitado e rodando
 log "Habilitando Nginx pra iniciar no boot..."
