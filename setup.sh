@@ -66,4 +66,8 @@ cat > /var/www/html/index.html << 'HTML'
 HTML
 
 log "=== Setup concluído com sucesso ==="
-log "Acesse: http://$(curl -s ifconfig.me)"
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
+    -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
+PUBLIC_IP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
+    http://169.254.169.254/latest/meta-data/public-ipv4)
+log "Acesse: http://$PUBLIC_IP"
