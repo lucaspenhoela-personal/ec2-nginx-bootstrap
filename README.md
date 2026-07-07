@@ -70,11 +70,13 @@ sudo bash setup.sh
 
 ## Custo
 
-**$0,00** — t2.micro dentro do Free Tier (750h/mês). Importante: stop/terminate da instância quando não em uso pra não consumir horas desnecessariamente.
+**$0,00 na execução original** — t2.micro dentro do Free Tier (750h/mês). Importante: stop/terminate da instância quando não em uso pra não consumir horas desnecessariamente.
+
+Nota: a elegibilidade de free tier de EC2/RDS desta conta expirou (reestruturação do Free Tier da AWS pós julho/2025). Hoje, a mesma instância gera custo por hora — o valor $0 vale apenas para o contexto da execução original.
 
 ## Próximas iterações
 
-- Reescrever toda a infra em Terraform (Projeto 3 do portfólio)
+- Reescrever toda a infra em Terraform (Projeto 3 do portfólio) — concluído: [aws-vpc-3tier-terraform](https://github.com/lucaspenhoela-personal/aws-vpc-3tier-terraform)
 - Adicionar HTTPS via Let's Encrypt + Certbot
 - Configurar fail2ban pra proteção SSH
 - Migrar pra User Data (script rodando no boot, sem `scp`+`ssh`)
