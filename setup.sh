@@ -1,7 +1,7 @@
 #!/bin/bash
 # ====================================================================
 # setup.sh - Provisiona servidor web Nginx no Ubuntu
-# Autor: Seu Nome
+# Autor: Lucas Ribeiro Penhoela
 # Uso: sudo bash setup.sh
 # ====================================================================
 
